@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareFlow OPD — Patient Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:        #1a56db;
+    --blue-dark:   #1040a8;
+    --blue-light:  #e8f0fd;
+    --green:       #0e9f6e;
+    --green-light: #e3f9f0;
+    --green-dark:  #0a7a54;
+    --amber:       #d97706;
+    --amber-light: #fef3c7;
+    --red:         #ef4444;
+    --red-light:   #fef2f2;
+    --text:        #0f172a;
+    --text-muted:  #64748b;
+    --bg:          #f8faff;
+    --white:       #ffffff;
+    --border:      #e2e8f0;
+    --sidebar-w:   260px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════
+     SIDEBAR
+  ═══════════════════════════ */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--text);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 50;
+    transition: transform 0.3s;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--blue);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px;
+    color: white;
+  }
+
+  .logo-text span { color: #60a5fa; }
+
+  .sidebar-user {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info p { font-size: 13px; font-weight: 600; color: white; }
+  .user-info span { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s;
+    border-radius: 0;
+    margin: 1px 10px;
+    border-radius: 8px;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+
+  .nav-item.active {
+    background: var(--blue);
+    color: white;
+  }
+
+  .nav-item svg { flex-shrink: 0; opacity: 0.7; }
+  .nav-item.active svg { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--blue);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .nav-item.active .nav-badge { background: rgba(255,255,255,0.25); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .logout-btn:hover { background: rgba(239,68,68,0.12); color: #f87171; }
+
+  /* ═══════════════════════════
+     MAIN CONTENT
+  ═══════════════════════════ */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .topbar-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .topbar-left p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+  }
+
+  /* PAGE CONTENT */
+  .content {
+    padding: 28px 32px;
+    flex: 1;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .stat-card:nth-child(2) { animation-delay: 0.05s; }
+  .stat-card:nth-child(3) { animation-delay: 0.1s; }
+  .stat-card:nth-child(4) { animation-delay: 0.15s; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .stat-icon.blue  { background: var(--blue-light); }
+  .stat-icon.green { background: var(--green-light); }
+  .stat-icon.amber { background: var(--amber-light); }
+  .stat-icon.red   { background: var(--red-light); }
+
+  .stat-info p { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-info span { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: block; }
+
+  /* MAIN GRID */
+  .page-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.2s;
+  }
+
+  .card-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-header-left h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card-header-left p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .step-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .step-pill {
+    width: 28px; height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .step-pill.active { background: var(--blue); }
+  .step-pill.done   { background: var(--green); }
+
+  .form-body { padding: 28px; }
+
+  /* Form sections */
+  .form-section {
+    display: none;
+  }
+
+  .form-section.active { display: block; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .form-group label span {
+    color: var(--red);
+    margin-left: 2px;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    display: flex; align-items: center;
+    pointer-events: none;
+  }
+
+  .input-wrap input,
+  .input-wrap select,
+  .input-wrap textarea {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    appearance: none;
+  }
+
+  .input-wrap textarea {
+    padding-top: 10px;
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .input-wrap.no-icon input,
+  .input-wrap.no-icon select,
+  .input-wrap.no-icon textarea {
+    padding-left: 12px;
+  }
+
+  .input-wrap input:focus,
+  .input-wrap select:focus,
+  .input-wrap textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+  }
+
+  .input-wrap input.error,
+  .input-wrap select.error {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+  }
+
+  .input-wrap input::placeholder,
+  .input-wrap textarea::placeholder { color: #b0bec5; }
+
+  .field-error {
+    font-size: 11px;
+    color: var(--red);
+    display: none;
+    margin-top: 2px;
+  }
+
+  .field-error.show { display: block; }
+
+  /* Gender radio */
+  .gender-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .gender-option {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .gender-option:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+
+  .gender-option input { display: none; }
+
+  .gender-option.selected {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+
+  .gender-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+
+  .gender-option.selected .gender-dot {
+    border-color: var(--blue);
+    background: var(--blue);
+    box-shadow: inset 0 0 0 2px white;
+  }
+
+  /* Form navigation */
+  .form-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .btn-next {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: var(--blue);
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(26,86,219,0.25);
+  }
+
+  .btn-next:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  .btn-submit {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: var(--green);
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(14,159,110,0.25);
+  }
+
+  .btn-submit:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+  /* ── SUCCESS MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px;
+    width: 420px;
+    text-align: center;
+    animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.85); }
+    to   { opacity:1; transform:scale(1); }
+  }
+
+  .modal-icon {
+    width: 72px; height: 72px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+  }
+
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .modal p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .patient-id-box {
+    background: var(--blue-light);
+    border: 1.5px dashed rgba(26,86,219,0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .patient-id-box span {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .patient-id-box strong {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 2px;
+    font-family: 'DM Serif Display', serif;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-btn-secondary {
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text-muted);
+  }
+
+  .modal-btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+  .modal-btn-primary {
+    border: none;
+    background: var(--blue);
+    color: white;
+    box-shadow: 0 4px 12px rgba(26,86,219,0.25);
+  }
+
+  .modal-btn-primary:hover { background: var(--blue-dark); }
+
+  /* ── RECENT PATIENTS TABLE ── */
+  .table-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.25s;
+  }
+
+  .table-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .table-header h3 { font-size: 14px; font-weight: 600; color: var(--text); }
+  .table-header span { font-size: 12px; color: var(--text-muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 10px 22px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg); }
+
+  tbody td {
+    padding: 12px 22px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .td-muted { color: var(--text-muted); }
+
+  .dept-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+
+  .dept-badge.green { background: var(--green-light); color: var(--green); }
+  .dept-badge.amber { background: var(--amber-light); color: var(--amber); }
+
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-dot::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+  }
+
+  /* ── RIGHT SIDEBAR CARDS ── */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .info-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.3s;
+  }
+
+  .info-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .req-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .req-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .req-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .dept-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .dept-chip {
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: default;
+    transition: all 0.2s;
+  }
+
+  .dept-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+  /* PROGRESS BAR */
+  .progress-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .progress-label { font-size: 11px; color: var(--text-muted); flex: 1; }
+  .progress-val   { font-size: 11px; font-weight: 600; color: var(--text); }
+
+  .progress-bar {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  @media (max-width: 1100px) {
+    .page-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2v16M2 10h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">Care<span>Flow</span></span>
+  </a>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">SR</div>
+    <div class="user-info">
+      <p>Sara Receptionist</p>
+      <span>Receptionist</span>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Reception</div>
+
+  <a href="register.html" class="nav-item active">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Patient Registration
+  </a>
+
+  <a href="token.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="2"/></svg>
+    Token Generation
+    <span class="nav-badge">12</span>
+  </a>
+
+  <a href="queue.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Queue Display
+  </a>
+
+  
+  <div class="sidebar-footer">
+    <a href="login.html" class="logout-btn">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Patient Registration</h1>
+      <p>Register new OPD patients and assign them to departments</p>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">🏥</div>
+        <div class="stat-info">
+          <p>24</p>
+          <span>Registered Today</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info">
+          <p>18</p>
+          <span>Tokens Issued</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">⏳</div>
+        <div class="stat-info">
+          <p>6</p>
+          <span>Still Waiting</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">👨‍⚕️</div>
+        <div class="stat-info">
+          <p>5</p>
+          <span>Doctors On Duty</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="page-grid">
+
+      <!-- FORM COLUMN -->
+      <div>
+        <!-- REGISTRATION FORM -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <h2>New Patient Registration</h2>
+              <p id="stepLabel">Step 1 of 3 — Personal Information</p>
+            </div>
+            <div class="step-pills">
+              <div class="step-pill active" id="pill1"></div>
+              <div class="step-pill" id="pill2"></div>
+              <div class="step-pill" id="pill3"></div>
+            </div>
+          </div>
+
+          <div class="form-body">
+
+            <!-- STEP 1: Personal Info -->
+            <div class="form-section active" id="step1">
+              <div class="section-title">Personal Information</div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>First Name <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="text" id="firstName" placeholder="e.g. Ahmed">
+                  </div>
+                  <span class="field-error" id="firstNameErr">First name is required</span>
+                </div>
+                <div class="form-group">
+                  <label>Last Name <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="text" id="lastName" placeholder="e.g. Hassan">
+                  </div>
+                  <span class="field-error" id="lastNameErr">Last name is required</span>
+                </div>
+              </div>
+
+              <div class="form-row three">
+                <div class="form-group">
+                  <label>Age <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="number" id="age" placeholder="e.g. 35" min="1" max="120">
+                  </div>
+                  <span class="field-error" id="ageErr">Valid age required</span>
+                </div>
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="date" id="dob">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Blood Group</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M12 2L6 9a6 6 0 1012 0L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <select id="blood">
+                      <option value="">Select</option>
+                      <option>A+</option><option>A-</option>
+                      <option>B+</option><option>B-</option>
+                      <option>AB+</option><option>AB-</option>
+                      <option>O+</option><option>O-</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px;">
+                <label>Gender <span>*</span></label>
+                <div class="gender-group">
+                  <label class="gender-option selected" id="gMale">
+                    <input type="radio" name="gender" value="male" checked>
+                    <div class="gender-dot"></div> Male
+                  </label>
+                  <label class="gender-option" id="gFemale">
+                    <input type="radio" name="gender" value="female">
+                    <div class="gender-dot"></div> Female
+                  </label>
+                  <label class="gender-option" id="gOther">
+                    <input type="radio" name="gender" value="other">
+                    <div class="gender-dot"></div> Other
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <div></div>
+                <button class="btn-next" onclick="goStep(2)">
+                  Next: Contact Info
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: Contact Info -->
+            <div class="form-section" id="step2">
+              <div class="section-title">Contact Information</div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label>Phone Number <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.07 2.18 2 2 0 012.03 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="tel" id="phone" placeholder="e.g. 0300-1234567">
+                  </div>
+                  <span class="field-error" id="phoneErr">Valid phone number required</span>
+                </div>
+              </div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+                    </span>
+                    <input type="email" id="email" placeholder="e.g. ahmed@email.com">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label>Home Address</label>
+                  <div class="input-wrap">
+                    <span class="input-icon" style="top:14px; transform:none;">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                    </span>
+                    <textarea id="address" placeholder="Street, City, Province"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Emergency Contact Name</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="text" id="emergencyName" placeholder="e.g. Ali Hassan">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Emergency Contact Phone</label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.07 2.18 2 2 0 012.03 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <input type="tel" id="emergencyPhone" placeholder="e.g. 0311-9876543">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <button class="btn-back" onclick="goStep(1)">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Back
+                </button>
+                <button class="btn-next" onclick="goStep(3)">
+                  Next: Medical Info
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3: Medical Info -->
+            <div class="form-section" id="step3">
+              <div class="section-title">Medical & Department Information</div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Department <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2"/><polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2"/></svg>
+                    </span>
+                    <select id="department">
+                      <option value="">Select Department</option>
+                      <option>General OPD</option>
+                      <option>Cardiology</option>
+                      <option>Orthopedics</option>
+                      <option>Pediatrics</option>
+                      <option>Gynecology</option>
+                      <option>Neurology</option>
+                      <option>Dermatology</option>
+                      <option>ENT</option>
+                    </select>
+                  </div>
+                  <span class="field-error" id="deptErr">Please select a department</span>
+                </div>
+                <div class="form-group">
+                  <label>Visit Type <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="2"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2"/></svg>
+                    </span>
+                    <select id="visitType">
+                      <option value="">Select Type</option>
+                      <option>New Patient</option>
+                      <option>Follow-up</option>
+                      <option>Emergency</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label>Chief Complaint / Symptoms <span>*</span></label>
+                  <div class="input-wrap">
+                    <span class="input-icon" style="top:14px; transform:none;">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <textarea id="complaint" placeholder="Describe the patient's main complaint or symptoms..."></textarea>
+                  </div>
+                  <span class="field-error" id="complaintErr">Please describe the complaint</span>
+                </div>
+              </div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label>Known Allergies / Medical History</label>
+                  <div class="input-wrap">
+                    <span class="input-icon" style="top:14px; transform:none;">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </span>
+                    <textarea id="allergies" placeholder="e.g. Penicillin allergy, Diabetic, Hypertensive..."></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <button class="btn-back" onclick="goStep(2)">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Back
+                </button>
+                <button class="btn-submit" onclick="submitForm()">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Register Patient
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RECENT PATIENTS TABLE -->
+        <div class="table-card" style="margin-top: 22px;">
+          <div class="table-header">
+            <h3>Recently Registered Patients</h3>
+            <span>Today, <span id="todayDate"></span></span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600; color:var(--blue);">P-1024</td>
+                <td>Ahmed Hassan</td>
+                <td class="td-muted">42</td>
+                <td><span class="dept-badge">Cardiology</span></td>
+                <td><span class="status-dot">Registered</span></td>
+                <td class="td-muted">09:14 AM</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600; color:var(--blue);">P-1023</td>
+                <td>Sara Iqbal</td>
+                <td class="td-muted">29</td>
+                <td><span class="dept-badge green">General OPD</span></td>
+                <td><span class="status-dot">Registered</span></td>
+                <td class="td-muted">08:58 AM</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600; color:var(--blue);">P-1022</td>
+                <td>Bilal Raza</td>
+                <td class="td-muted">55</td>
+                <td><span class="dept-badge amber">Orthopedics</span></td>
+                <td><span class="status-dot">Registered</span></td>
+                <td class="td-muted">08:45 AM</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600; color:var(--blue);">P-1021</td>
+                <td>Fatima Khan</td>
+                <td class="td-muted">33</td>
+                <td><span class="dept-badge">Gynecology</span></td>
+                <td><span class="status-dot">Registered</span></td>
+                <td class="td-muted">08:30 AM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+
+        <!-- Form progress -->
+        <div class="info-card">
+          <h4>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--blue)" stroke-width="2"/><path d="M12 6v6l4 2" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/></svg>
+            Registration Progress
+          </h4>
+          <div>
+            <div class="progress-section">
+              <span class="progress-label" id="progressLabel">Personal Info</span>
+              <span class="progress-val" id="progressVal">33%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width:33%"></div>
+            </div>
+          </div>
+          <div class="req-list">
+            <div class="req-item" id="chk1">
+              <div class="req-dot">1</div>
+              Personal Information
+            </div>
+            <div class="req-item" id="chk2" style="opacity:0.4;">
+              <div class="req-dot">2</div>
+              Contact Information
+            </div>
+            <div class="req-item" id="chk3" style="opacity:0.4;">
+              <div class="req-dot">3</div>
+              Medical & Department Info
+            </div>
+          </div>
+        </div>
+
+        <!-- Required fields -->
+        <div class="info-card">
+          <h4>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--blue)" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/></svg>
+            Required Fields
+          </h4>
+          <div class="req-list">
+            <div class="req-item"><div class="req-dot" style="background:var(--red-light);color:var(--red);">✱</div> First & Last Name</div>
+            <div class="req-item"><div class="req-dot" style="background:var(--red-light);color:var(--red);">✱</div> Age & Gender</div>
+            <div class="req-item"><div class="req-dot" style="background:var(--red-light);color:var(--red);">✱</div> Phone Number</div>
+            <div class="req-item"><div class="req-dot" style="background:var(--red-light);color:var(--red);">✱</div> Department</div>
+            <div class="req-item"><div class="req-dot" style="background:var(--red-light);color:var(--red);">✱</div> Chief Complaint</div>
+          </div>
+        </div>
+
+        <!-- Departments -->
+        <div class="info-card">
+          <h4>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="var(--blue)" stroke-width="2"/></svg>
+            Available Departments
+          </h4>
+          <div class="dept-list">
+            <span class="dept-chip">General OPD</span>
+            <span class="dept-chip">Cardiology</span>
+            <span class="dept-chip">Orthopedics</span>
+            <span class="dept-chip">Pediatrics</span>
+            <span class="dept-chip">Gynecology</span>
+            <span class="dept-chip">Neurology</span>
+            <span class="dept-chip">Dermatology</span>
+            <span class="dept-chip">ENT</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <h3>Patient Registered!</h3>
+    <p>The patient has been successfully registered. Their Patient ID is shown below. Please note it for token generation.</p>
+    <div class="patient-id-box">
+      <span>Generated Patient ID</span>
+      <strong id="generatedId">P-1025</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeModal()">Register Another</button>
+      <button class="modal-btn-primary" onclick="window.location.href='token.html'">Generate Token →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  // =========================
+  // CURRENT DATE
+  // =========================
+  const now = new Date();
+  const opts = { weekday:'short', year:'numeric', month:'short', day:'numeric' };
+
+  document.getElementById('currentDate').textContent =
+    now.toLocaleDateString('en-US', opts);
+
+  document.getElementById('todayDate').textContent =
+    now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+
+  // =========================
+  // GENDER SELECTION
+  // =========================
+  document.querySelectorAll('.gender-option').forEach(opt => {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('.gender-option').forEach(o => o.classList.remove('selected'));
+      this.classList.add('selected');
+      this.querySelector('input').checked = true;
+    });
+  });
+
+
+  // =========================
+  // LOAD PATIENTS (FIXED)
+  // =========================
+  async function loadPatients() {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/patients"); // ✅ FIXED HERE
+      const data = await res.json();
+
+      const tbody = document.querySelector("tbody");
+      tbody.innerHTML = "";
+
+      data.forEach(p => {
+        const row = `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.data.firstName} ${p.data.lastName}</td>
+            <td>${p.data.age}</td>
+            <td>${p.data.department}</td>
+            <td>Registered</td>
+            <td>${p.time}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+
+    } catch (err) {
+      console.error("Failed to load patients:", err);
+    }
+  }
+
+
+  document.addEventListener("DOMContentLoaded", loadPatients);
+
+
+  // =========================
+  // STEP NAVIGATION
+  // =========================
+  let currentStep = 1;
+
+  function goStep(step) {
+    if (step > currentStep && !validateStep(currentStep)) return;
+
+    document.getElementById('step' + currentStep).classList.remove('active');
+    document.getElementById('step' + step).classList.add('active');
+
+    for (let i = 1; i <= 3; i++) {
+      const pill = document.getElementById('pill' + i);
+      pill.className = 'step-pill';
+      if (i < step) pill.classList.add('done');
+      else if (i === step) pill.classList.add('active');
+    }
+
+    const labels = ['Personal Info', 'Contact Info', 'Medical Info'];
+    const pcts   = ['33%', '66%', '100%'];
+
+    document.getElementById('progressLabel').textContent = labels[step - 1];
+    document.getElementById('progressVal').textContent   = pcts[step - 1];
+    document.getElementById('progressFill').style.width  = pcts[step - 1];
+
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('chk' + i).style.opacity = i <= step ? '1' : '0.4';
+    }
+
+    document.getElementById('stepLabel').textContent =
+      `Step ${step} of 3 — ${labels[step-1]}`;
+
+    currentStep = step;
+  }
+
+
+  // =========================
+  // VALIDATION
+  // =========================
+  function validateStep(step) {
+    let valid = true;
+
+    if (step === 1) {
+      const fn = document.getElementById('firstName');
+      const ln = document.getElementById('lastName');
+      const ag = document.getElementById('age');
+
+      if (!fn.value.trim()) { showErr('firstNameErr', fn); valid = false; }
+      else hideErr('firstNameErr', fn);
+
+      if (!ln.value.trim()) { showErr('lastNameErr', ln); valid = false; }
+      else hideErr('lastNameErr', ln);
+
+      if (!ag.value || ag.value < 1 || ag.value > 120) {
+        showErr('ageErr', ag); valid = false;
+      } else hideErr('ageErr', ag);
+    }
+
+    if (step === 2) {
+      const ph = document.getElementById('phone');
+      if (!ph.value.trim()) { showErr('phoneErr', ph); valid = false; }
+      else hideErr('phoneErr', ph);
+    }
+
+    return valid;
+  }
+
+
+  function showErr(errId, input) {
+    document.getElementById(errId).classList.add('show');
+    input.classList.add('error');
+  }
+
+  function hideErr(errId, input) {
+    document.getElementById(errId).classList.remove('show');
+    input.classList.remove('error');
+  }
+
+
+  // =========================
+  // SUBMIT FORM (FIXED)
+  // =========================
+  async function submitForm() {
+
+    const dept = document.getElementById('department');
+    const comp = document.getElementById('complaint');
+
+    let valid = true;
+
+    if (!dept.value) { showErr('deptErr', dept); valid = false; }
+    else hideErr('deptErr', dept);
+
+    if (!comp.value.trim()) { showErr('complaintErr', comp); valid = false; }
+    else hideErr('complaintErr', comp);
+
+    if (!valid) return;
+
+    const gender = document.querySelector('input[name="gender"]:checked')?.value;
+
+    const payload = {
+      firstName: document.getElementById('firstName').value,
+      lastName: document.getElementById('lastName').value,
+      age: parseInt(document.getElementById('age').value),
+      dob: document.getElementById('dob').value,
+      blood: document.getElementById('blood').value,
+      gender: gender,
+
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      address: document.getElementById('address').value,
+      emergencyName: document.getElementById('emergencyName').value,
+      emergencyPhone: document.getElementById('emergencyPhone').value,
+
+      department: dept.value,
+      visitType: document.getElementById('visitType').value,
+      complaint: comp.value,
+      allergies: document.getElementById('allergies').value
+    };
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/register-patient", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+
+        // FIXED: backend returns patientId (not data.patient.id)
+        document.getElementById('generatedId').textContent = data.patientId;
+
+        document.getElementById('successModal').classList.add('show');
+
+        loadPatients();
+
+      } else {
+        alert(data.detail || "Registration failed");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Server not reachable (check FastAPI is running on port 8000)");
+    }
+  }
+
+
+  // =========================
+  // CLOSE MODAL
+  // =========================
+  function closeModal() {
+    document.getElementById('successModal').classList.remove('show');
+
+    goStep(1);
+
+    document.querySelectorAll(
+      'input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select'
+    ).forEach(el => el.value = '');
+
+    document.querySelectorAll('.gender-option')
+      .forEach(o => o.classList.remove('selected'));
+
+    document.getElementById('gMale').classList.add('selected');
+  }
+
+</script>
+
+</body>
+</html>

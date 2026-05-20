@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareFlow OPD — Token Generation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:        #1a56db;
+    --blue-dark:   #1040a8;
+    --blue-light:  #e8f0fd;
+    --green:       #0e9f6e;
+    --green-light: #e3f9f0;
+    --green-dark:  #0a7a54;
+    --amber:       #d97706;
+    --amber-light: #fef3c7;
+    --red:         #ef4444;
+    --red-light:   #fef2f2;
+    --text:        #0f172a;
+    --text-muted:  #64748b;
+    --bg:          #f8faff;
+    --white:       #ffffff;
+    --border:      #e2e8f0;
+    --sidebar-w:   260px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--text);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top:0; left:0;
+    height: 100vh;
+    z-index: 50;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--blue);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px; color: white;
+  }
+
+  .logo-text span { color: #60a5fa; }
+
+  .sidebar-user {
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+
+  .user-info p  { font-size: 13px; font-weight: 600; color: white; }
+  .user-info span { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .nav-section-label {
+    font-size: 10px; font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 12px 24px 6px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; text-decoration: none;
+    font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s;
+    margin: 1px 10px; border-radius: 8px;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+  .nav-item.active { background: var(--blue); color: white; }
+  .nav-item svg { flex-shrink: 0; opacity: 0.7; }
+  .nav-item.active svg { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--blue); color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+  }
+
+  .nav-item.active .nav-badge { background: rgba(255,255,255,0.25); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logout-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    text-decoration: none; font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.4); transition: all 0.2s; width: 100%;
+  }
+
+  .logout-btn:hover { background: rgba(239,68,68,0.12); color: #f87171; }
+
+  /* ═══ MAIN ═══ */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1; display: flex; flex-direction: column; min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 40;
+  }
+
+  .topbar-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; color: var(--text);
+  }
+
+  .topbar-left p { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  .topbar-date {
+    font-size: 12px; color: var(--text-muted);
+    background: var(--bg); padding: 6px 12px;
+    border-radius: 7px; border: 1px solid var(--border);
+  }
+
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ═══ STATS ═══ */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .stat-card:nth-child(2) { animation-delay:.05s; }
+  .stat-card:nth-child(3) { animation-delay:.1s; }
+  .stat-card:nth-child(4) { animation-delay:.15s; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .stat-icon {
+    width:42px; height:42px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0;
+  }
+
+  .stat-icon.blue  { background: var(--blue-light); }
+  .stat-icon.green { background: var(--green-light); }
+  .stat-icon.amber { background: var(--amber-light); }
+  .stat-icon.red   { background: var(--red-light); }
+
+  .stat-info p    { font-size:22px; font-weight:700; color:var(--text); line-height:1; }
+  .stat-info span { font-size:12px; color:var(--text-muted); margin-top:3px; display:block; }
+
+  /* ═══ PAGE GRID ═══ */
+  .page-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ═══ CARDS ═══ */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    animation: fadeUp 0.4s ease both; animation-delay: 0.2s;
+  }
+
+  .card-header {
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-header h2 { font-size:15px; font-weight:600; color:var(--text); }
+  .card-header p  { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+  .card-body { padding: 24px; }
+
+  /* ═══ SEARCH BOX ═══ */
+  .search-wrap {
+    position: relative; margin-bottom: 20px;
+  }
+
+  .search-wrap input {
+    width: 100%; padding: 12px 16px 12px 44px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    color: var(--text); background: var(--bg);
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-wrap input:focus {
+    border-color: var(--blue); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+  }
+
+  .search-wrap input::placeholder { color: #b0bec5; }
+
+  .search-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); color: #94a3b8;
+    display: flex; align-items: center; pointer-events: none;
+  }
+
+  /* ═══ PATIENT RESULTS ═══ */
+  .patient-results {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 20px; max-height: 240px; overflow-y: auto;
+  }
+
+  .patient-result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1.5px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    transition: all 0.2s; background: var(--bg);
+  }
+
+  .patient-result-item:hover {
+    border-color: var(--blue); background: var(--blue-light);
+  }
+
+  .patient-result-item.selected {
+    border-color: var(--blue); background: var(--blue-light);
+  }
+
+  .pat-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .pat-avatar.green { background: var(--green); }
+  .pat-avatar.amber { background: var(--amber); }
+
+  .pat-info { flex: 1; }
+  .pat-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .pat-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .pat-id {
+    font-size: 11px; font-weight: 700; color: var(--blue);
+    background: var(--blue-light); padding: 3px 8px; border-radius: 6px;
+  }
+
+  .already-badge {
+    font-size: 11px; font-weight: 600; color: var(--amber);
+    background: var(--amber-light); padding: 3px 8px; border-radius: 6px;
+  }
+
+  /* ═══ SELECTED PATIENT PANEL ═══ */
+  .selected-patient {
+    display: none;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 20px;
+  }
+
+  .selected-patient.show { display: block; }
+
+  .sp-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  }
+
+  .sp-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .sp-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .sp-sub  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .sp-clear {
+    margin-left: auto; background: none; border: none;
+    color: var(--text-muted); cursor: pointer; font-size: 18px;
+    line-height: 1; transition: color 0.2s;
+  }
+
+  .sp-clear:hover { color: var(--red); }
+
+  .sp-details {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .sp-detail {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+
+  .sp-detail-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sp-detail-val   { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 3px; }
+
+  /* ═══ GENERATE BUTTON ═══ */
+  .btn-generate {
+    width: 100%; padding: 14px;
+    background: var(--blue); color: white; border: none;
+    border-radius: 10px; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(26,86,219,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .btn-generate:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .btn-generate:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; box-shadow: none; transform: none; }
+
+  .btn-print {
+    width: 100%; padding: 11px;
+    background: var(--white); color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .btn-print:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .btn-print:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ═══ TOKEN DISPLAY ═══ */
+  .token-display {
+    display: none;
+    background: var(--text);
+    border-radius: 16px; padding: 28px; text-align: center;
+    margin-bottom: 16px; position: relative; overflow: hidden;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.85); }
+    to   { opacity:1; transform:scale(1); }
+  }
+
+  .token-display::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .token-display.show { display: block; }
+
+  .token-label {
+    font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  }
+
+  .token-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 72px; color: white; line-height: 1;
+    margin-bottom: 4px; letter-spacing: -2px;
+  }
+
+  .token-prefix {
+    font-size: 13px; color: #60a5fa; font-weight: 600; margin-bottom: 20px;
+  }
+
+  .token-divider {
+    border: none; border-top: 1px dashed rgba(255,255,255,0.15);
+    margin: 16px 0;
+  }
+
+  .token-meta {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .token-meta-item { text-align: center; }
+  .token-meta-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.5px; }
+  .token-meta-val   { font-size: 13px; font-weight: 600; color: white; margin-top: 4px; }
+
+  .wait-badge {
+    display: inline-block; margin-top: 16px;
+    background: rgba(26,86,219,0.4); color: #93c5fd;
+    font-size: 12px; font-weight: 600; padding: 5px 14px;
+    border-radius: 20px;
+  }
+
+  /* ═══ QUEUE TABLE ═══ */
+  .queue-filters {
+    display: flex; gap: 8px; padding: 14px 20px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 5px 14px; border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg); font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  }
+
+  .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .filter-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-muted); padding: 10px 20px;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg); }
+
+  tbody td { padding: 11px 20px; font-size: 13px; color: var(--text); }
+
+  .token-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--blue); color: white;
+    font-size: 12px; font-weight: 700;
+  }
+
+  .token-badge.waiting { background: var(--border); color: var(--text-muted); }
+  .token-badge.done    { background: var(--green-light); color: var(--green); }
+
+  .dept-badge {
+    display: inline-block; padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    background: var(--blue-light); color: var(--blue);
+  }
+
+  .dept-badge.green { background: var(--green-light); color: var(--green); }
+  .dept-badge.amber { background: var(--amber-light); color: var(--amber); }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+  }
+
+  .status-pill::before { content:''; width:6px; height:6px; border-radius:50%; display:inline-block; }
+
+  .status-pill.consulting { background: var(--blue-light); color: var(--blue); }
+  .status-pill.consulting::before { background: var(--blue); }
+  .status-pill.waiting    { background: var(--amber-light); color: var(--amber); }
+  .status-pill.waiting::before { background: var(--amber); }
+  .status-pill.done       { background: var(--green-light); color: var(--green); }
+  .status-pill.done::before { background: var(--green); }
+
+  .action-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .action-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+  .table-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-muted);
+  }
+
+  .refresh-btn {
+    display: flex; align-items: center; gap: 5px;
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 12px;
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-muted); font-size: 13px;
+  }
+
+  .empty-state div { font-size: 32px; margin-bottom: 10px; }
+
+  @media (max-width: 1100px) {
+    .page-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2v16M2 10h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">Care<span>Flow</span></span>
+  </a>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">SR</div>
+    <div class="user-info">
+      <p>Sara Receptionist</p>
+      <span>Receptionist</span>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Reception</div>
+
+  <a href="register.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Patient Registration
+  </a>
+
+  <a href="token.html" class="nav-item active">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="2"/></svg>
+    Token Generation
+    <span class="nav-badge" id="queueCount">12</span>
+  </a>
+
+  <a href="queue.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Queue Display
+  </a>
+
+  
+  <div class="sidebar-footer">
+    <a href="login.html" class="logout-btn">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Token Generation</h1>
+      <p>Search a patient and assign them a queue token</p>
+    </div>
+    <div class="topbar-date" id="currentDate"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">🎫</div>
+        <div class="stat-info"><p id="totalTokens">12</p><span>Tokens Issued Today</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">⏳</div>
+        <div class="stat-info"><p>6</p><span>Currently Waiting</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info"><p>5</p><span>Consultations Done</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">🔢</div>
+        <div class="stat-info"><p id="nextTokenStat">T-013</p><span>Next Token</span></div>
+      </div>
+    </div>
+
+    <!-- PAGE GRID -->
+    <div class="page-grid">
+
+      <!-- LEFT: Search + Generate -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- Search Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Search Patient</h2>
+              <p>Search by Patient ID or name to assign a token</p>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="search-wrap">
+              <span class="search-icon">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="#94a3b8" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              <input type="text" id="searchInput" placeholder="Search by Patient ID (e.g. P-1024) or name..." oninput="searchPatients(this.value)">
+            </div>
+
+            <!-- Search Results -->
+            <div class="patient-results" id="patientResults">
+              <div class="patient-result-item" onclick="selectPatient('P-1024','Ahmed Hassan',42,'Male','Cardiology')">
+                <div class="pat-avatar">AH</div>
+                <div class="pat-info">
+                  <div class="pat-name">Ahmed Hassan</div>
+                  <div class="pat-meta">42 yrs · Male · Cardiology</div>
+                </div>
+                <span class="pat-id">P-1024</span>
+              </div>
+              <div class="patient-result-item" onclick="selectPatient('P-1023','Sara Iqbal',29,'Female','General OPD')">
+                <div class="pat-avatar green">SI</div>
+                <div class="pat-info">
+                  <div class="pat-name">Sara Iqbal</div>
+                  <div class="pat-meta">29 yrs · Female · General OPD</div>
+                </div>
+                <span class="pat-id">P-1023</span>
+              </div>
+              <div class="patient-result-item" onclick="selectPatient('P-1022','Bilal Raza',55,'Male','Orthopedics')">
+                <div class="pat-avatar amber">BR</div>
+                <div class="pat-info">
+                  <div class="pat-name">Bilal Raza</div>
+                  <div class="pat-meta">55 yrs · Male · Orthopedics</div>
+                </div>
+                <span class="pat-id">P-1022</span>
+              </div>
+              <div class="patient-result-item">
+                <div class="pat-avatar" style="background:#8b5cf6;">FK</div>
+                <div class="pat-info">
+                  <div class="pat-name">Fatima Khan</div>
+                  <div class="pat-meta">33 yrs · Female · Gynecology</div>
+                </div>
+                <span class="already-badge">Token Issued</span>
+              </div>
+            </div>
+
+            <!-- Selected Patient -->
+            <div class="selected-patient" id="selectedPatient">
+              <div class="sp-header">
+                <div class="sp-avatar" id="spAvatar">AH</div>
+                <div>
+                  <div class="sp-name" id="spName">Ahmed Hassan</div>
+                  <div class="sp-sub" id="spSub">P-1024 · Cardiology</div>
+                </div>
+                <button class="sp-clear" onclick="clearPatient()">×</button>
+              </div>
+              <div class="sp-details">
+                <div class="sp-detail">
+                  <div class="sp-detail-label">Age</div>
+                  <div class="sp-detail-val" id="spAge">42 yrs</div>
+                </div>
+                <div class="sp-detail">
+                  <div class="sp-detail-label">Gender</div>
+                  <div class="sp-detail-val" id="spGender">Male</div>
+                </div>
+                <div class="sp-detail">
+                  <div class="sp-detail-label">Department</div>
+                  <div class="sp-detail-val" id="spDept">Cardiology</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Token Display -->
+            <div class="token-display" id="tokenDisplay">
+              <div class="token-label">Queue Token</div>
+              <div class="token-number" id="tokenNum">013</div>
+              <div class="token-prefix" id="tokenFull">T-013</div>
+              <hr class="token-divider">
+              <div class="token-meta">
+                <div class="token-meta-item">
+                  <div class="token-meta-label">Patient</div>
+                  <div class="token-meta-val" id="tokenPatient">Ahmed H.</div>
+                </div>
+                <div class="token-meta-item">
+                  <div class="token-meta-label">Department</div>
+                  <div class="token-meta-val" id="tokenDept">Cardiology</div>
+                </div>
+                <div class="token-meta-item">
+                  <div class="token-meta-label">Position</div>
+                  <div class="token-meta-val" id="tokenPos">#3 in line</div>
+                </div>
+              </div>
+              <div class="wait-badge" id="waitBadge">⏱ Est. wait: ~15 mins</div>
+            </div>
+
+            <!-- Buttons -->
+            <button class="btn-generate" id="generateBtn" onclick="generateToken()" disabled>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" stroke="white" stroke-width="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="white" stroke-width="2"/></svg>
+              Generate Token
+            </button>
+
+            <button class="btn-print" id="printBtn" onclick="printToken()" disabled>
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9" stroke="currentColor" stroke-width="2"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="12" height="8" stroke="currentColor" stroke-width="2"/></svg>
+              Print Token Slip
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Live Queue Table -->
+      <div class="card" style="animation-delay:0.25s;">
+        <div class="card-header">
+          <div>
+            <h2>Live Queue</h2>
+            <p>All active tokens for today</p>
+          </div>
+          <span style="font-size:11px; background:var(--green-light); color:var(--green); padding:3px 10px; border-radius:20px; font-weight:600;">● Live</span>
+        </div>
+
+        <div class="queue-filters">
+          <button class="filter-btn active" onclick="filterQueue(this,'all')">All</button>
+          <button class="filter-btn" onclick="filterQueue(this,'cardiology')">Cardiology</button>
+          <button class="filter-btn" onclick="filterQueue(this,'general')">General OPD</button>
+          <button class="filter-btn" onclick="filterQueue(this,'ortho')">Orthopedics</button>
+        </div>
+
+        <div id="queueTableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Patient</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="queueBody">
+              <tr>
+                <td><span class="token-badge">T01</span></td>
+                <td>Ahmed Hassan</td>
+                <td><span class="dept-badge">Cardiology</span></td>
+                <td><span class="status-pill consulting">In Consult</span></td>
+                <td><button class="action-btn" style="color:var(--green);border-color:var(--green);">✓ Done</button></td>
+              </tr>
+              <tr>
+                <td><span class="token-badge waiting">T02</span></td>
+                <td>Sara Iqbal</td>
+                <td><span class="dept-badge green">General OPD</span></td>
+                <td><span class="status-pill waiting">Waiting</span></td>
+                <td><button class="action-btn" onclick="removeFromQueue(this)">Remove</button></td>
+              </tr>
+              <tr>
+                <td><span class="token-badge waiting">T03</span></td>
+                <td>Bilal Raza</td>
+                <td><span class="dept-badge amber">Orthopedics</span></td>
+                <td><span class="status-pill waiting">Waiting</span></td>
+                <td><button class="action-btn" onclick="removeFromQueue(this)">Remove</button></td>
+              </tr>
+              <tr>
+                <td><span class="token-badge done">T04</span></td>
+                <td>Fatima Khan</td>
+                <td><span class="dept-badge">Gynecology</span></td>
+                <td><span class="status-pill done">Completed</span></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span>Showing <strong>4</strong> tokens · <strong>1</strong> in consult · <strong>2</strong> waiting</span>
+          <button class="refresh-btn" onclick="refreshQueue()">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><polyline points="23,4 23,11 16,11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Date
+  const now = new Date();
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+
+  // State
+  let selectedPatientData = null;
+  let tokenGenerated = false;
+  let nextToken = 13;
+
+  const allPatients = [
+    { id:'P-1024', name:'Ahmed Hassan',  initials:'AH', age:42, gender:'Male',   dept:'Cardiology',  color:'',       hasToken: false },
+    { id:'P-1023', name:'Sara Iqbal',    initials:'SI', age:29, gender:'Female', dept:'General OPD', color:'green',  hasToken: false },
+    { id:'P-1022', name:'Bilal Raza',    initials:'BR', age:55, gender:'Male',   dept:'Orthopedics', color:'amber',  hasToken: false },
+    { id:'P-1021', name:'Fatima Khan',   initials:'FK', age:33, gender:'Female', dept:'Gynecology',  color:'purple', hasToken: true  },
+  ];
+
+  // Search
+  function searchPatients(query) {
+    const results = document.getElementById('patientResults');
+    if (!query.trim()) {
+      renderResults(allPatients);
+      return;
+    }
+    const q = query.toLowerCase();
+    const filtered = allPatients.filter(p =>
+      p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)
+    );
+    renderResults(filtered);
+  }
+
+  function renderResults(patients) {
+    const results = document.getElementById('patientResults');
+    if (patients.length === 0) {
+      results.innerHTML = '<div class="empty-state"><div>🔍</div>No patients found. Please register the patient first.</div>';
+      return;
+    }
+    results.innerHTML = patients.map(p => `
+      <div class="patient-result-item ${selectedPatientData?.id === p.id ? 'selected' : ''}"
+           onclick="${p.hasToken ? '' : `selectPatient('${p.id}','${p.name}',${p.age},'${p.gender}','${p.dept}')`}"
+           style="${p.hasToken ? 'cursor:default;opacity:0.7;' : ''}">
+        <div class="pat-avatar ${p.color}" style="${p.color === 'purple' ? 'background:#8b5cf6;' : ''}">${p.initials}</div>
+        <div class="pat-info">
+          <div class="pat-name">${p.name}</div>
+          <div class="pat-meta">${p.age} yrs · ${p.gender} · ${p.dept}</div>
+        </div>
+        ${p.hasToken
+          ? '<span class="already-badge">Token Issued</span>'
+          : `<span class="pat-id">${p.id}</span>`}
+      </div>
+    `).join('');
+  }
+
+  function selectPatient(id, name, age, gender, dept) {
+    selectedPatientData = { id, name, age, gender, dept };
+    tokenGenerated = false;
+
+    // Show selected panel
+    const initials = name.split(' ').map(n => n[0]).join('');
+    document.getElementById('spAvatar').textContent = initials;
+    document.getElementById('spName').textContent   = name;
+    document.getElementById('spSub').textContent    = `${id} · ${dept}`;
+    document.getElementById('spAge').textContent    = `${age} yrs`;
+    document.getElementById('spGender').textContent = gender;
+    document.getElementById('spDept').textContent   = dept;
+    document.getElementById('selectedPatient').classList.add('show');
+
+    // Hide token display
+    document.getElementById('tokenDisplay').classList.remove('show');
+    document.getElementById('tokenDisplay').style.display = 'none';
+
+    // Enable button
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('printBtn').disabled    = true;
+
+    // Highlight selected in list
+    document.querySelectorAll('.patient-result-item').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+  }
+
+  function clearPatient() {
+    selectedPatientData = null;
+    tokenGenerated      = false;
+    document.getElementById('selectedPatient').classList.remove('show');
+    document.getElementById('tokenDisplay').style.display = 'none';
+    document.getElementById('tokenDisplay').classList.remove('show');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('printBtn').disabled    = true;
+    document.querySelectorAll('.patient-result-item').forEach(el => el.classList.remove('selected'));
+  }
+
+  function generateToken() {
+    if (!selectedPatientData || tokenGenerated) return;
+    tokenGenerated = true;
+
+    const tokenNum  = String(nextToken).padStart(3, '0');
+    const tokenFull = 'T-' + tokenNum;
+    const waitMins  = (nextToken - 12) * 5;
+    const position  = nextToken - 12;
+
+    document.getElementById('tokenNum').textContent     = tokenNum;
+    document.getElementById('tokenFull').textContent    = tokenFull;
+    document.getElementById('tokenPatient').textContent = selectedPatientData.name.split(' ')[0] + ' ' + selectedPatientData.name.split(' ')[1][0] + '.';
+    document.getElementById('tokenDept').textContent    = selectedPatientData.dept;
+    document.getElementById('tokenPos').textContent     = '#' + position + ' in line';
+    document.getElementById('waitBadge').textContent    = '⏱ Est. wait: ~' + waitMins + ' mins';
+
+    // Show token
+    const td = document.getElementById('tokenDisplay');
+    td.style.display = 'block';
+    td.classList.add('show');
+
+    // Update stats
+    document.getElementById('totalTokens').textContent  = nextToken;
+    document.getElementById('nextTokenStat').textContent = 'T-' + String(nextToken + 1).padStart(3, '0');
+    document.getElementById('queueCount').textContent   = nextToken;
+
+    // Enable print, disable generate
+    document.getElementById('printBtn').disabled    = false;
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('generateBtn').textContent = '✓ Token Generated';
+
+    // Add to queue table
+    addToQueueTable(tokenFull, selectedPatientData.name, selectedPatientData.dept);
+
+    nextToken++;
+  }
+
+  function addToQueueTable(token, name, dept) {
+    const body = document.getElementById('queueBody');
+    const deptClass = dept === 'General OPD' ? 'green' : dept === 'Orthopedics' ? 'amber' : '';
+    const row = document.createElement('tr');
+    row.style.animation = 'fadeUp 0.3s ease';
+    row.innerHTML = `
+      <td><span class="token-badge waiting">${token}</span></td>
+      <td>${name}</td>
+      <td><span class="dept-badge ${deptClass}">${dept}</span></td>
+      <td><span class="status-pill waiting">Waiting</span></td>
+      <td><button class="action-btn" onclick="removeFromQueue(this)">Remove</button></td>
+    `;
+    body.appendChild(row);
+  }
+
+  function removeFromQueue(btn) {
+    if (confirm('Remove this patient from the queue?')) {
+      btn.closest('tr').style.opacity = '0';
+      btn.closest('tr').style.transition = 'opacity 0.3s';
+      setTimeout(() => btn.closest('tr').remove(), 300);
+    }
+  }
+
+  function filterQueue(btn, dept) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // In real system, this would filter by dept from DB
+  }
+
+  function printToken() {
+    window.print();
+  }
+
+  function refreshQueue() {
+    const btn = document.querySelector('.refresh-btn svg');
+    btn.style.animation = 'spin 0.5s linear';
+    setTimeout(() => btn.style.animation = '', 500);
+  }
+
+  // Initial render
+  renderResults(allPatients);
+</script>
+
+</body>
+</html>

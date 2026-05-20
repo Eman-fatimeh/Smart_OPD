@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareFlow OPD — Smart Patient Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1a56db;
+    --blue-dark: #1040a8;
+    --blue-light: #e8f0fd;
+    --green: #0e9f6e;
+    --green-light: #e3f9f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --bg: #f8faff;
+    --white: #ffffff;
+    --border: #e2e8f0;
+    --card-shadow: 0 4px 24px rgba(26,86,219,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 6%;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon svg { width: 20px; height: 20px; }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-text span { color: var(--blue); }
+
+  nav { display: flex; align-items: center; gap: 32px; }
+
+  nav a {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--blue); }
+
+  .nav-login {
+    background: var(--blue) !important;
+    color: white !important;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: background 0.2s, transform 0.15s !important;
+    cursor: pointer;
+  }
+
+  .nav-login:hover {
+    background: var(--blue-dark) !important;
+    transform: translateY(-1px);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 90px 6% 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(26,86,219,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 22px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .hero-badge span {
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 50px;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--blue);
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 460px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+    padding: 13px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(26,86,219,0.3);
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: var(--blue-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26,86,219,0.35);
+  }
+
+  .btn-ghost {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+  }
+
+  .btn-ghost:hover { color: var(--blue); }
+
+  /* ── HERO VISUAL ── */
+  .hero-visual {
+    position: relative;
+    animation: floatUp 0.8s ease both;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes floatUp {
+    from { opacity:0; transform:translateY(30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .dashboard-card {
+    background: white;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+
+  .dc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .dc-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dc-badge {
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .queue-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  .queue-item.active {
+    background: var(--blue-light);
+    border-color: rgba(26,86,219,0.2);
+  }
+
+  .token-num {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--blue);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .queue-item.waiting .token-num {
+    background: var(--border);
+    color: var(--text-muted);
+  }
+
+  .q-info { flex:1; }
+  .q-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .q-dept { font-size: 11px; color: var(--text-muted); }
+  .q-status {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    background: var(--green-light);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .q-status.waiting {
+    color: var(--text-muted);
+    background: var(--border);
+  }
+
+  .mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .mini-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .mini-stat-num { font-size: 20px; font-weight: 700; color: var(--blue); }
+  .mini-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .float-badge {
+    position: absolute;
+    top: -16px;
+    left: -20px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: floatBadge 3s ease-in-out infinite;
+  }
+
+  @keyframes floatBadge {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-6px); }
+  }
+
+  .float-dot { width:8px; height:8px; background:var(--green); border-radius:50%; }
+
+  /* ── STATS STRIP ── */
+  .stats-strip {
+    background: var(--text);
+    padding: 40px 6%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    text-align: center;
+  }
+
+  .stat-item { border-right: 1px solid rgba(255,255,255,0.1); }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    color: white;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-num span { color: #60a5fa; }
+  .stat-label { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+  /* ── FEATURES ── */
+  .features { padding: 90px 6%; }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+
+  .section-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 56px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .feat-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s, background 0.25s;
+    cursor: default;
+  }
+
+  .feat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(26,86,219,0.3);
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+
+  .feat-card:hover h3 { color: white; }
+  .feat-card:hover p  { color: rgba(255,255,255,0.8); }
+  .feat-card:hover .feat-icon { background: rgba(255,255,255,0.2); }
+  .feat-card:hover .feat-tag { background: rgba(255,255,255,0.2); color: white; }
+
+  .feat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    font-size: 22px;
+    transition: background 0.25s;
+  }
+
+  .feat-icon.blue { background: var(--blue-light); }
+  .feat-icon.green { background: var(--green-light); }
+  .feat-icon.amber { background: #fff8e1; }
+
+  .feat-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .feat-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    transition: color 0.25s;
+  }
+
+  .feat-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+    background: var(--blue-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    background: var(--text);
+    padding: 90px 6%;
+    color: white;
+  }
+
+  .how .section-title { color: white; }
+  .how .section-label { color: #60a5fa; }
+  .how .section-sub { color: rgba(255,255,255,0.5); }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    position: relative;
+    margin-top: 10px;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .step { text-align: center; position: relative; }
+
+  .step-num {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: white;
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 6px rgba(26,86,219,0.2);
+  }
+
+  .step h4 { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: white; }
+  .step p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* ── LOGIN MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.6);
+    backdrop-filter: blur(6px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    position: relative;
+  }
+
+  @keyframes modalIn {
+    from { opacity:0; transform:scale(0.9) translateY(20px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: var(--bg); }
+
+  .modal-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .modal-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+
+  .role-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .role-tab {
+    padding: 10px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .role-tab .role-emoji { display: block; font-size: 18px; margin-bottom: 4px; }
+
+  .role-tab.active {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+    background: white;
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .login-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .login-error {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .login-error.show { display: block; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── CTA ── */
+  .cta {
+    padding: 90px 6%;
+    text-align: center;
+    background: linear-gradient(135deg, #eef3ff 0%, #f0fdf8 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(26,86,219,0.06) 0%, transparent 70%);
+  }
+
+  .cta h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+
+  .cta p {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 36px;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0a0f1e;
+    padding: 32px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: white;
+  }
+
+  .footer-logo span { color: #60a5fa; }
+
+  footer p { font-size: 12px; color: rgba(255,255,255,0.35); }
+
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  .footer-links a:hover { color: white; }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 34px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">
+      <div class="modal-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2v16M2 10h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span style="font-family:'DM Serif Display',serif;font-size:18px;">Care<span style="color:var(--blue)">Flow</span></span>
+    </div>
+    <h2>Staff Login</h2>
+    <p class="modal-sub">Select your role and enter your credentials</p>
+
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="selectRole('admin', this)">
+        <span class="role-emoji">🛡️</span>Admin
+      </button>
+      <button class="role-tab" onclick="selectRole('receptionist', this)">
+        <span class="role-emoji">👩‍💼</span>Reception
+      </button>
+      <button class="role-tab" onclick="selectRole('doctor', this)">
+        <span class="role-emoji">👨‍⚕️</span>Doctor
+      </button>
+    </div>
+
+    <div class="login-error" id="loginError">Invalid username or password. Please try again.</div>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter your username" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') handleLogin()" />
+    </div>
+
+    <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+      <span id="loginBtnText">Login to CareFlow</span>
+      <div class="spinner" id="loginSpinner"></div>
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M10 2v16M2 10h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">Care<span>Flow</span></span>
+  </a>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a onclick="openModal()" class="nav-login">Staff Login →</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge"><span></span> Smart OPD Management</div>
+    <h1>Smarter Patient Flow for <em>Modern</em> Hospitals</h1>
+    <p>Digitize your outpatient department — from patient registration and token queues to real-time doctor scheduling and admin monitoring, all in one platform.</p>
+    <div class="hero-actions">
+      <a onclick="openModal()" class="btn-primary">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Login to System
+      </a>
+      <a href="#features" class="btn-ghost">See Features ↓</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="float-badge">
+      <div class="float-dot"></div>
+      Live Queue Active
+    </div>
+    <div class="dashboard-card">
+      <div class="dc-header">
+        <span class="dc-title">Today's OPD Queue</span>
+        <span class="dc-badge">● Live</span>
+      </div>
+      <div class="queue-list">
+        <div class="queue-item active">
+          <div class="token-num">T01</div>
+          <div class="q-info">
+            <div class="q-name">Ahmed Hassan</div>
+            <div class="q-dept">Cardiology · Dr. Malik</div>
+          </div>
+          <span class="q-status">In Consult</span>
+        </div>
+        <div class="queue-item waiting">
+          <div class="token-num">T02</div>
+          <div class="q-info">
+            <div class="q-name">Sara Iqbal</div>
+            <div class="q-dept">General OPD · Dr. Khan</div>
+          </div>
+          <span class="q-status waiting">Waiting</span>
+        </div>
+        <div class="queue-item waiting">
+          <div class="token-num">T03</div>
+          <div class="q-info">
+            <div class="q-name">Bilal Raza</div>
+            <div class="q-dept">Orthopedics · Dr. Ali</div>
+          </div>
+          <span class="q-status waiting">Waiting</span>
+        </div>
+      </div>
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-num" id="c1">0</div>
+          <div class="mini-stat-label">Registered</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-num" id="c2">0</div>
+          <div class="mini-stat-label">In Queue</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-num" id="c3">0</div>
+          <div class="mini-stat-label">Doctors On</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <div class="stat-num"><span class="counter" data-target="500">0</span><span>+</span></div>
+    <div class="stat-label">Patients Registered Daily</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span class="counter" data-target="20">0</span><span>+</span></div>
+    <div class="stat-label">Doctors Managed</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span class="counter" data-target="60">0</span><span>%</span></div>
+    <div class="stat-label">Reduced Wait Time</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span class="counter" data-target="99">0</span><span>%</span></div>
+    <div class="stat-label">System Uptime</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="fade-up">
+    <div class="section-label">Core Features</div>
+    <h2 class="section-title">Everything your OPD needs</h2>
+    <p class="section-sub">Built specifically for hospital outpatient departments — every feature maps directly to your daily workflow.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card fade-up">
+      <div class="feat-icon blue">🏥</div>
+      <h3>Patient Registration</h3>
+      <p>Register patients quickly with full details — name, age, gender, contact, and department. Auto-generates a unique patient ID.</p>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon blue">🎫</div>
+      <h3>Token Queue Management</h3>
+      <p>FIFO-based token system assigns each patient a queue number. Displays estimated wait time and current queue status in real time.</p>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon green">👨‍⚕️</div>
+      <h3>Doctor Scheduling</h3>
+      <p>Admins can add, update, and track doctor availability. Patients are automatically assigned to available doctors by department.</p>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon green">📊</div>
+      <h3>Admin Dashboard</h3>
+      <p>Real-time monitoring of patient flow, queue stats, doctor status, and department load — all in a single control panel.</p>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon amber">📋</div>
+      <h3>Reports & Analytics</h3>
+      <p>Generate daily and historical reports on patient volume, wait times, and doctor consultations for hospital management.</p>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon amber">🔐</div>
+      <h3>Role-Based Access</h3>
+      <p>Separate portals for Admins, Receptionists, and Doctors — each with permissions tailored to their responsibilities.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="fade-up">
+    <div class="section-label">Workflow</div>
+    <h2 class="section-title">How CareFlow works</h2>
+    <p class="section-sub">A simple, four-step patient journey from arrival to consultation.</p>
+  </div>
+  <div class="steps fade-up">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Patient Arrives</h4>
+      <p>Receptionist registers the patient and captures all required information in the system.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Token Generated</h4>
+      <p>System assigns the next available token number and places patient in the FIFO queue.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Doctor Assigned</h4>
+      <p>Patient is matched to an available doctor based on department and current schedule.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Consultation Done</h4>
+      <p>Doctor updates consultation status, queue advances, and admin dashboard reflects changes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="fade-up">
+    <h2>Ready to transform your OPD?</h2>
+    <p>Log in with your hospital staff credentials to access the system. Admins, receptionists, and doctors each have their own dedicated portal.</p>
+    <a onclick="openModal()" class="btn-primary" style="display:inline-flex;margin:0 auto;cursor:pointer;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Staff Login
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Care<span>Flow</span></div>
+  <p>© 2026 Smart OPD Patient Flow Management System · Final Year Project</p>
+  <div class="footer-links">
+    <a onclick="openModal()">Login</a>
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+  </div>
+</footer>
+
+<script>
+  // ── CONFIG: point this to your FastAPI server ──
+  const API_BASE = 'http://localhost:8000';
+
+  // ── MODAL ──
+  function openModal() {
+    document.getElementById('loginModal').classList.add('open');
+    setTimeout(() => document.getElementById('username').focus(), 300);
+  }
+
+  function closeModal() {
+    document.getElementById('loginModal').classList.remove('open');
+    document.getElementById('loginError').classList.remove('show');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  }
+
+  // Close modal on overlay click
+  document.getElementById('loginModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ── ROLE TABS ──
+  let selectedRole = 'admin';
+
+  function selectRole(role, btn) {
+    selectedRole = role;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('loginError').classList.remove('show');
+  }
+
+  // ── LOGIN — calls FastAPI POST /api/auth/login ──
+  async function handleLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const btn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('loginBtnText');
+    const spinner = document.getElementById('loginSpinner');
+    const errorBox = document.getElementById('loginError');
+
+    if (!username || !password) {
+      errorBox.textContent = 'Please enter both username and password.';
+      errorBox.classList.add('show');
+      return;
+    }
+
+    // Show loading state
+    btn.disabled = true;
+    btnText.textContent = 'Logging in...';
+    spinner.style.display = 'block';
+    errorBox.classList.remove('show');
+
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role: selectedRole })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        // Save token & role to localStorage
+        localStorage.setItem('careflow_token', data.token);
+        localStorage.setItem('careflow_role', data.role);
+        localStorage.setItem('careflow_user', JSON.stringify(data.user));
+
+        // Redirect based on role
+        const redirectMap = {
+          admin:        'admin-dashboard.html',
+          receptionist: 'receptionist.html',
+          doctor:       'doctor-portal.html'
+        };
+
+        window.location.href = redirectMap[data.role] || 'dashboard.html';
+      } else {
+        errorBox.textContent = data.detail || 'Invalid credentials. Please try again.';
+        errorBox.classList.add('show');
+      }
+    } catch (err) {
+      errorBox.textContent = 'Cannot connect to server. Make sure FastAPI is running on port 8000.';
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = 'Login to CareFlow';
+      spinner.style.display = 'none';
+    }
+  }
+
+  // ── COUNTER ANIMATION ──
+  function animateCounter(el, target) {
+    let start = 0;
+    const duration = 1800;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start = Math.min(start + step, target);
+      el.textContent = Math.ceil(start);
+      if (start >= target) clearInterval(timer);
+    }, 16);
+  }
+
+  // Mini card counters
+  [[24,'c1'],[8,'c2'],[6,'c3']].forEach(([t, id]) => {
+    const el = document.getElementById(id);
+    if (el) animateCounter(el, t);
+  });
+
+  // Strip counters (trigger on scroll)
+  const counters = document.querySelectorAll('.counter');
+  let countersStarted = false;
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !countersStarted) {
+        countersStarted = true;
+        counters.forEach(counter => {
+          animateCounter(counter, parseInt(counter.getAttribute('data-target')));
+        });
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const statsStrip = document.querySelector('.stats-strip');
+  if (statsStrip) statsObserver.observe(statsStrip);
+
+  // ── FADE-UP ON SCROLL ──
+  const fadeObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
+
+  // ── SMOOTH SCROLL ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareFlow OPD — Queue Display</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:        #1a56db;
+    --blue-dark:   #1040a8;
+    --blue-light:  #e8f0fd;
+    --green:       #0e9f6e;
+    --green-light: #e3f9f0;
+    --amber:       #d97706;
+    --amber-light: #fef3c7;
+    --red:         #ef4444;
+    --red-light:   #fef2f2;
+    --text:        #0f172a;
+    --text-muted:  #64748b;
+    --bg:          #f8faff;
+    --white:       #ffffff;
+    --border:      #e2e8f0;
+    --sidebar-w:   260px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--text);
+    display: flex; flex-direction: column;
+    position: fixed; top:0; left:0;
+    height: 100vh; z-index: 50;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width:34px; height:34px; background:var(--blue); border-radius:9px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+
+  .logo-text { font-family:'DM Serif Display',serif; font-size:19px; color:white; }
+  .logo-text span { color:#60a5fa; }
+
+  .sidebar-user {
+    padding:16px 24px; display:flex; align-items:center; gap:12px;
+    border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:8px;
+  }
+
+  .user-avatar {
+    width:36px; height:36px; border-radius:50%; background:var(--blue);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; color:white; flex-shrink:0;
+  }
+
+  .user-info p    { font-size:13px; font-weight:600; color:white; }
+  .user-info span { font-size:11px; color:rgba(255,255,255,0.4); }
+
+  .nav-section-label {
+    font-size:10px; font-weight:600; color:rgba(255,255,255,0.25);
+    text-transform:uppercase; letter-spacing:1px; padding:12px 24px 6px;
+  }
+
+  .nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 14px; text-decoration:none;
+    font-size:13px; font-weight:500; color:rgba(255,255,255,0.5);
+    transition:all 0.2s; margin:1px 10px; border-radius:8px;
+  }
+
+  .nav-item:hover { background:rgba(255,255,255,0.07); color:white; }
+  .nav-item.active { background:var(--blue); color:white; }
+  .nav-item svg { flex-shrink:0; opacity:0.7; }
+  .nav-item.active svg { opacity:1; }
+
+  .nav-badge {
+    margin-left:auto; background:var(--blue); color:white;
+    font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px;
+  }
+
+  .nav-item.active .nav-badge { background:rgba(255,255,255,0.25); }
+
+  .sidebar-footer {
+    margin-top:auto; padding:16px 10px;
+    border-top:1px solid rgba(255,255,255,0.08);
+  }
+
+  .logout-btn {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; border-radius:8px;
+    text-decoration:none; font-size:13px; font-weight:500;
+    color:rgba(255,255,255,0.4); transition:all 0.2s; width:100%;
+  }
+
+  .logout-btn:hover { background:rgba(239,68,68,0.12); color:#f87171; }
+
+  /* ═══ MAIN ═══ */
+  .main {
+    margin-left:var(--sidebar-w); flex:1;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+
+  .topbar {
+    background:var(--white); border-bottom:1px solid var(--border);
+    padding:0 32px; height:64px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:40;
+  }
+
+  .topbar-left h1 {
+    font-family:'DM Serif Display',serif; font-size:20px; color:var(--text);
+  }
+
+  .topbar-left p { font-size:12px; color:var(--text-muted); margin-top:1px; }
+
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+
+  .topbar-date {
+    font-size:12px; color:var(--text-muted);
+    background:var(--bg); padding:6px 12px;
+    border-radius:7px; border:1px solid var(--border);
+  }
+
+  .tv-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:8px 16px; background:var(--blue); color:white;
+    border:none; border-radius:8px; font-family:'DM Sans',sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; box-shadow:0 2px 8px rgba(26,86,219,0.25);
+  }
+
+  .tv-btn:hover { background:var(--blue-dark); transform:translateY(-1px); }
+
+  .content { padding:28px 32px; flex:1; }
+
+  /* ═══ STATS ═══ */
+  .stats-row {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:16px; margin-bottom:28px;
+  }
+
+  .stat-card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:12px; padding:18px 20px;
+    display:flex; align-items:center; gap:14px;
+    animation:fadeUp 0.4s ease both;
+  }
+
+  .stat-card:nth-child(2) { animation-delay:.05s; }
+  .stat-card:nth-child(3) { animation-delay:.1s; }
+  .stat-card:nth-child(4) { animation-delay:.15s; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .stat-icon {
+    width:42px; height:42px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0;
+  }
+
+  .stat-icon.blue  { background:var(--blue-light); }
+  .stat-icon.green { background:var(--green-light); }
+  .stat-icon.amber { background:var(--amber-light); }
+  .stat-icon.red   { background:var(--red-light); }
+
+  .stat-info p    { font-size:22px; font-weight:700; color:var(--text); line-height:1; }
+  .stat-info span { font-size:12px; color:var(--text-muted); margin-top:3px; display:block; }
+
+  /* ═══ NOW SERVING HERO ═══ */
+  .now-serving {
+    background:var(--text); border-radius:20px;
+    padding:36px 40px; margin-bottom:28px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:relative; overflow:hidden;
+    animation:fadeUp 0.5s ease both; animation-delay:0.2s;
+  }
+
+  .now-serving::before {
+    content:'';
+    position:absolute; top:-80px; right:-80px;
+    width:300px; height:300px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+  }
+
+  .now-serving::after {
+    content:'';
+    position:absolute; bottom:-60px; left:30%;
+    width:200px; height:200px; border-radius:50%;
+    background:rgba(26,86,219,0.15);
+  }
+
+  .ns-left { position:relative; z-index:1; }
+
+  .ns-label {
+    font-size:11px; font-weight:600; color:rgba(255,255,255,0.4);
+    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .live-dot {
+    width:8px; height:8px; background:var(--green); border-radius:50%;
+    display:inline-block;
+    animation:pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.8); }
+  }
+
+  .ns-token {
+    font-family:'DM Serif Display',serif;
+    font-size:80px; color:white; line-height:1;
+    letter-spacing:-3px; margin-bottom:4px;
+  }
+
+  .ns-token-label { font-size:16px; color:#60a5fa; font-weight:600; }
+
+  .ns-right {
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:flex-end; gap:16px;
+  }
+
+  .ns-info-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:12px; text-align:right;
+  }
+
+  .ns-info-item { }
+  .ns-info-label { font-size:10px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.5px; }
+  .ns-info-val   { font-size:14px; font-weight:600; color:white; margin-top:3px; }
+
+  .ns-next {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+    border-radius:12px; padding:14px 20px;
+    display:flex; align-items:center; gap:16px;
+  }
+
+  .ns-next-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:3px; }
+  .ns-next-token { font-size:20px; font-weight:700; color:white; }
+  .ns-next-name  { font-size:12px; color:rgba(255,255,255,0.5); }
+
+  .call-btn {
+    padding:10px 20px; background:var(--blue); color:white;
+    border:none; border-radius:9px; font-family:'DM Sans',sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; white-space:nowrap;
+  }
+
+  .call-btn:hover { background:var(--blue-dark); }
+
+  /* ═══ MAIN GRID ═══ */
+  .page-grid {
+    display:grid; grid-template-columns:1fr 320px;
+    gap:24px; align-items:start;
+  }
+
+  /* ═══ QUEUE TABLE CARD ═══ */
+  .card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden;
+    animation:fadeUp 0.4s ease both; animation-delay:0.25s;
+  }
+
+  .card-header {
+    padding:16px 22px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+  }
+
+  .card-header h2 { font-size:15px; font-weight:600; color:var(--text); }
+
+  .filter-row { display:flex; gap:6px; flex-wrap:wrap; }
+
+  .filter-btn {
+    padding:5px 13px; border-radius:20px;
+    border:1.5px solid var(--border); background:var(--bg);
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600;
+    color:var(--text-muted); cursor:pointer; transition:all 0.2s;
+  }
+
+  .filter-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .filter-btn.active { background:var(--blue); color:white; border-color:var(--blue); }
+
+  table { width:100%; border-collapse:collapse; }
+
+  thead th {
+    text-align:left; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--text-muted); padding:10px 20px;
+    background:var(--bg); border-bottom:1px solid var(--border);
+  }
+
+  tbody tr { border-bottom:1px solid var(--border); transition:background 0.15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--bg); }
+  tbody tr.current-row { background:#eff6ff; }
+
+  tbody td { padding:12px 20px; font-size:13px; color:var(--text); }
+
+  .token-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:8px;
+    background:var(--border); color:var(--text-muted);
+    font-size:11px; font-weight:700; flex-shrink:0;
+  }
+
+  .token-badge.current { background:var(--blue); color:white; }
+  .token-badge.done    { background:var(--green-light); color:var(--green); }
+
+  .dept-badge {
+    display:inline-block; padding:3px 9px; border-radius:20px;
+    font-size:11px; font-weight:600;
+    background:var(--blue-light); color:var(--blue);
+  }
+
+  .dept-badge.green { background:var(--green-light); color:var(--green); }
+  .dept-badge.amber { background:var(--amber-light); color:var(--amber); }
+  .dept-badge.red   { background:var(--red-light); color:var(--red); }
+
+  .status-pill {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px;
+  }
+
+  .status-pill::before {
+    content:''; width:6px; height:6px;
+    border-radius:50%; display:inline-block;
+  }
+
+  .status-pill.consulting { background:var(--blue-light); color:var(--blue); }
+  .status-pill.consulting::before { background:var(--blue); animation:pulse 1s infinite; }
+  .status-pill.waiting    { background:var(--amber-light); color:var(--amber); }
+  .status-pill.waiting::before { background:var(--amber); }
+  .status-pill.done       { background:var(--green-light); color:var(--green); }
+  .status-pill.done::before { background:var(--green); }
+  .status-pill.called     { background:var(--red-light); color:var(--red); }
+  .status-pill.called::before { background:var(--red); animation:pulse 0.8s infinite; }
+
+  .wait-time {
+    font-size:12px; color:var(--text-muted);
+    display:flex; align-items:center; gap:4px;
+  }
+
+  .table-footer {
+    padding:12px 20px; border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--text-muted);
+  }
+
+  .refresh-btn {
+    display:flex; align-items:center; gap:5px;
+    background:none; border:1px solid var(--border);
+    border-radius:6px; padding:5px 12px;
+    font-size:12px; font-weight:600; color:var(--text-muted);
+    cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+  }
+
+  .refresh-btn:hover { border-color:var(--blue); color:var(--blue); }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ═══ RIGHT COL ═══ */
+  .right-col { display:flex; flex-direction:column; gap:18px; }
+
+  .info-card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden;
+    animation:fadeUp 0.4s ease both; animation-delay:0.3s;
+  }
+
+  .info-card-header {
+    padding:14px 18px; border-bottom:1px solid var(--border);
+    font-size:13px; font-weight:600; color:var(--text);
+    display:flex; align-items:center; gap:7px;
+  }
+
+  /* Dept breakdown */
+  .dept-row {
+    display:flex; align-items:center; gap:10px;
+    padding:11px 18px; border-bottom:1px solid var(--border);
+  }
+
+  .dept-row:last-child { border-bottom:none; }
+
+  .dept-color {
+    width:10px; height:10px; border-radius:50%; flex-shrink:0;
+  }
+
+  .dept-name { font-size:13px; color:var(--text); flex:1; }
+  .dept-count { font-size:13px; font-weight:700; color:var(--text); }
+
+  .dept-bar-wrap {
+    width:70px; height:5px; background:var(--border); border-radius:3px; overflow:hidden;
+  }
+
+  .dept-bar { height:100%; border-radius:3px; transition:width 0.5s ease; }
+
+  /* Doctor status */
+  .doctor-row {
+    display:flex; align-items:center; gap:10px;
+    padding:11px 18px; border-bottom:1px solid var(--border);
+  }
+
+  .doctor-row:last-child { border-bottom:none; }
+
+  .doc-avatar {
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:white; flex-shrink:0;
+  }
+
+  .doc-name { font-size:13px; font-weight:600; color:var(--text); }
+  .doc-dept { font-size:11px; color:var(--text-muted); }
+
+  .doc-status {
+    margin-left:auto; font-size:11px; font-weight:600;
+    padding:3px 9px; border-radius:20px;
+  }
+
+  .doc-status.available { background:var(--green-light); color:var(--green); }
+  .doc-status.busy      { background:var(--blue-light); color:var(--blue); }
+  .doc-status.away      { background:var(--amber-light); color:var(--amber); }
+
+  /* Auto refresh indicator */
+  .auto-refresh {
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:var(--text-muted);
+    padding:10px 18px; border-top:1px solid var(--border);
+  }
+
+  .refresh-ring {
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid var(--border); border-top-color:var(--green);
+    animation:spin 2s linear infinite;
+  }
+
+  /* ═══ TV MODE ═══ */
+  .tv-overlay {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:#0a0f1e; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:40px;
+  }
+
+  .tv-overlay.show { display:flex; }
+
+  .tv-header {
+    position:absolute; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:24px 40px; border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+
+  .tv-logo { font-family:'DM Serif Display',serif; font-size:22px; color:white; }
+  .tv-logo span { color:#60a5fa; }
+
+  .tv-clock { font-family:'DM Serif Display',serif; font-size:22px; color:white; }
+
+  .tv-live {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:600; color:rgba(255,255,255,0.5);
+  }
+
+  .tv-body {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:40px; width:100%; max-width:1100px; margin-top:60px;
+  }
+
+  /* Now serving big */
+  .tv-now-serving {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    border-radius:24px; padding:50px 40px; text-align:center;
+  }
+
+  .tv-ns-label {
+    font-size:14px; font-weight:600; color:rgba(255,255,255,0.35);
+    text-transform:uppercase; letter-spacing:2px; margin-bottom:20px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+
+  .tv-token {
+    font-family:'DM Serif Display',serif;
+    font-size:130px; color:white; line-height:1; letter-spacing:-4px;
+    margin-bottom:8px;
+  }
+
+  .tv-token-id { font-size:20px; color:#60a5fa; font-weight:600; margin-bottom:28px; }
+
+  .tv-meta {
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+
+  .tv-meta-item {
+    background:rgba(255,255,255,0.06); border-radius:12px; padding:16px;
+  }
+
+  .tv-meta-label { font-size:11px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.5px; }
+  .tv-meta-val   { font-size:18px; font-weight:600; color:white; margin-top:6px; }
+
+  /* Waiting list */
+  .tv-waiting { display:flex; flex-direction:column; gap:12px; }
+
+  .tv-waiting-title {
+    font-size:14px; font-weight:600; color:rgba(255,255,255,0.35);
+    text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;
+  }
+
+  .tv-queue-item {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px; padding:18px 22px;
+    display:flex; align-items:center; gap:16px;
+    transition:all 0.3s;
+  }
+
+  .tv-queue-item.next {
+    background:rgba(26,86,219,0.2); border-color:rgba(26,86,219,0.4);
+  }
+
+  .tv-q-token {
+    font-family:'DM Serif Display',serif; font-size:28px; color:white;
+    width:60px; text-align:center; flex-shrink:0;
+  }
+
+  .tv-q-name { font-size:16px; font-weight:600; color:white; }
+  .tv-q-dept { font-size:12px; color:rgba(255,255,255,0.4); margin-top:3px; }
+
+  .tv-q-wait {
+    margin-left:auto; font-size:13px; font-weight:600; color:rgba(255,255,255,0.4);
+    white-space:nowrap;
+  }
+
+  .tv-q-next-badge {
+    background:var(--blue); color:white;
+    font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;
+    white-space:nowrap;
+  }
+
+  .tv-footer {
+    position:absolute; bottom:0; left:0; right:0;
+    padding:18px 40px; border-top:1px solid rgba(255,255,255,0.06);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+
+  .tv-footer p { font-size:12px; color:rgba(255,255,255,0.25); }
+
+  .tv-exit {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+    color:rgba(255,255,255,0.5); padding:8px 16px; border-radius:8px;
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+
+  .tv-exit:hover { background:rgba(255,255,255,0.12); color:white; }
+
+  @media (max-width:1100px) {
+    .page-grid { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .ns-info-grid { grid-template-columns:1fr; }
+  }
+
+  @media (max-width:768px) {
+    .sidebar { transform:translateX(-100%); }
+    .main { margin-left:0; }
+    .now-serving { flex-direction:column; gap:24px; }
+    .ns-right { align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2v16M2 10h16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">Care<span>Flow</span></span>
+  </a>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">SR</div>
+    <div class="user-info">
+      <p>Sara Receptionist</p>
+      <span>Receptionist</span>
+    </div>
+  </div>
+
+  <div class="nav-section-label">Reception</div>
+
+  <a href="register.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Patient Registration
+  </a>
+
+  <a href="token.html" class="nav-item">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="2"/></svg>
+    Token Generation
+    <span class="nav-badge">12</span>
+  </a>
+
+  <a href="queue.html" class="nav-item active">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Queue Display
+  </a>
+
+
+  <div class="sidebar-footer">
+    <a href="login.html" class="logout-btn">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Queue Display</h1>
+      <p>Real-time patient queue monitoring and management</p>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+      <button class="tv-btn" onclick="openTV()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke="white" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        TV / Waiting Room Mode
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">🎫</div>
+        <div class="stat-info"><p>12</p><span>Total Tokens Today</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">⏳</div>
+        <div class="stat-info"><p id="waitingCount">5</p><span>Currently Waiting</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">🩺</div>
+        <div class="stat-info"><p>1</p><span>In Consultation</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-info"><p>6</p><span>Completed Today</span></div>
+      </div>
+    </div>
+
+    <!-- NOW SERVING HERO -->
+    <div class="now-serving">
+      <div class="ns-left">
+        <div class="ns-label"><span class="live-dot"></span> Now Serving</div>
+        <div class="ns-token" id="currentTokenNum">001</div>
+        <div class="ns-token-label" id="currentTokenId">T-001 · Cardiology</div>
+      </div>
+      <div class="ns-right">
+        <div class="ns-info-grid">
+          <div class="ns-info-item">
+            <div class="ns-info-label">Patient</div>
+            <div class="ns-info-val" id="currentPatient">Ahmed Hassan</div>
+          </div>
+          <div class="ns-info-item">
+            <div class="ns-info-label">Doctor</div>
+            <div class="ns-info-val">Dr. Malik</div>
+          </div>
+          <div class="ns-info-item">
+            <div class="ns-info-label">Department</div>
+            <div class="ns-info-val">Cardiology</div>
+          </div>
+          <div class="ns-info-item">
+            <div class="ns-info-label">Avg Wait</div>
+            <div class="ns-info-val">~12 mins</div>
+          </div>
+        </div>
+        <div class="ns-next">
+          <div>
+            <div class="ns-next-label">Up Next</div>
+            <div class="ns-next-token" id="nextTokenDisplay">T-002</div>
+            <div class="ns-next-name" id="nextPatientName">Sara Iqbal</div>
+          </div>
+          <button class="call-btn" onclick="callNext()">Call Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="page-grid">
+
+      <!-- QUEUE TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Full Queue List</h2>
+          <div class="filter-row">
+            <button class="filter-btn active" onclick="filterDept(this,'all')">All</button>
+            <button class="filter-btn" onclick="filterDept(this,'cardiology')">Cardiology</button>
+            <button class="filter-btn" onclick="filterDept(this,'general')">General OPD</button>
+            <button class="filter-btn" onclick="filterDept(this,'ortho')">Orthopedics</button>
+            <button class="filter-btn" onclick="filterDept(this,'gynecology')">Gynecology</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Patient Name</th>
+              <th>Department</th>
+              <th>Doctor</th>
+              <th>Status</th>
+              <th>Wait Time</th>
+            </tr>
+          </thead>
+          <tbody id="queueBody">
+            <tr class="current-row">
+              <td><span class="token-badge current">T01</span></td>
+              <td style="font-weight:600;">Ahmed Hassan</td>
+              <td><span class="dept-badge">Cardiology</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Malik</td>
+              <td><span class="status-pill consulting">In Consult</span></td>
+              <td><span class="wait-time">— In progress</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge">T02</span></td>
+              <td>Sara Iqbal</td>
+              <td><span class="dept-badge green">General OPD</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Khan</td>
+              <td><span class="status-pill waiting">Waiting</span></td>
+              <td><span class="wait-time">⏱ ~5 mins</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge">T03</span></td>
+              <td>Bilal Raza</td>
+              <td><span class="dept-badge amber">Orthopedics</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Ali</td>
+              <td><span class="status-pill waiting">Waiting</span></td>
+              <td><span class="wait-time">⏱ ~10 mins</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge">T04</span></td>
+              <td>Fatima Khan</td>
+              <td><span class="dept-badge red">Gynecology</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Amina</td>
+              <td><span class="status-pill waiting">Waiting</span></td>
+              <td><span class="wait-time">⏱ ~15 mins</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge">T05</span></td>
+              <td>Usman Sheikh</td>
+              <td><span class="dept-badge">Cardiology</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Malik</td>
+              <td><span class="status-pill waiting">Waiting</span></td>
+              <td><span class="wait-time">⏱ ~20 mins</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge">T06</span></td>
+              <td>Ayesha Noor</td>
+              <td><span class="dept-badge green">General OPD</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Khan</td>
+              <td><span class="status-pill called">Called</span></td>
+              <td><span class="wait-time">⏱ ~25 mins</span></td>
+            </tr>
+            <tr>
+              <td><span class="token-badge done">T07</span></td>
+              <td>Imran Butt</td>
+              <td><span class="dept-badge amber">Orthopedics</span></td>
+              <td style="font-size:12px; color:var(--text-muted);">Dr. Ali</td>
+              <td><span class="status-pill done">Completed</span></td>
+              <td><span class="wait-time" style="color:var(--green);">✓ Done</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer">
+          <span>7 tokens total · <strong id="activeCount">5</strong> active · <strong>1</strong> in consult</span>
+          <button class="refresh-btn" onclick="refreshQueue()">
+            <svg id="refreshIcon" width="12" height="12" fill="none" viewBox="0 0 24 24"><polyline points="23,4 23,11 16,11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT COL -->
+      <div class="right-col">
+
+        <!-- Dept breakdown -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/></svg>
+            Queue by Department
+          </div>
+          <div class="dept-row">
+            <div class="dept-color" style="background:#1a56db;"></div>
+            <div class="dept-name">Cardiology</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:80%; background:#1a56db;"></div></div>
+            <div class="dept-count">2</div>
+          </div>
+          <div class="dept-row">
+            <div class="dept-color" style="background:#0e9f6e;"></div>
+            <div class="dept-name">General OPD</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:60%; background:#0e9f6e;"></div></div>
+            <div class="dept-count">2</div>
+          </div>
+          <div class="dept-row">
+            <div class="dept-color" style="background:#d97706;"></div>
+            <div class="dept-name">Orthopedics</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:40%; background:#d97706;"></div></div>
+            <div class="dept-count">1</div>
+          </div>
+          <div class="dept-row">
+            <div class="dept-color" style="background:#ef4444;"></div>
+            <div class="dept-name">Gynecology</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:20%; background:#ef4444;"></div></div>
+            <div class="dept-count">1</div>
+          </div>
+        </div>
+
+        <!-- Doctor status -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/></svg>
+            Doctor Availability
+          </div>
+          <div class="doctor-row">
+            <div class="doc-avatar" style="background:#1a56db;">MM</div>
+            <div>
+              <div class="doc-name">Dr. Malik</div>
+              <div class="doc-dept">Cardiology</div>
+            </div>
+            <span class="doc-status busy">In Session</span>
+          </div>
+          <div class="doctor-row">
+            <div class="doc-avatar" style="background:#0e9f6e;">AK</div>
+            <div>
+              <div class="doc-name">Dr. Khan</div>
+              <div class="doc-dept">General OPD</div>
+            </div>
+            <span class="doc-status available">Available</span>
+          </div>
+          <div class="doctor-row">
+            <div class="doc-avatar" style="background:#d97706;">RA</div>
+            <div>
+              <div class="doc-name">Dr. Ali</div>
+              <div class="doc-dept">Orthopedics</div>
+            </div>
+            <span class="doc-status available">Available</span>
+          </div>
+          <div class="doctor-row">
+            <div class="doc-avatar" style="background:#8b5cf6;">SA</div>
+            <div>
+              <div class="doc-name">Dr. Amina</div>
+              <div class="doc-dept">Gynecology</div>
+            </div>
+            <span class="doc-status away">On Break</span>
+          </div>
+          <div class="auto-refresh">
+            <div class="refresh-ring"></div>
+            Auto-refreshing every 30 seconds
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TV / WAITING ROOM MODE ═══ -->
+<div class="tv-overlay" id="tvOverlay">
+  <div class="tv-header">
+    <div class="tv-logo">Care<span>Flow</span> OPD</div>
+    <div class="tv-live"><span class="live-dot"></span> Live Queue</div>
+    <div class="tv-clock" id="tvClock"></div>
+  </div>
+
+  <div class="tv-body">
+    <!-- Now Serving -->
+    <div class="tv-now-serving">
+      <div class="tv-ns-label"><span class="live-dot"></span> Now Serving</div>
+      <div class="tv-token" id="tvToken">001</div>
+      <div class="tv-token-id" id="tvTokenId">T-001</div>
+      <div class="tv-meta">
+        <div class="tv-meta-item">
+          <div class="tv-meta-label">Patient</div>
+          <div class="tv-meta-val" id="tvPatient">Ahmed Hassan</div>
+        </div>
+        <div class="tv-meta-item">
+          <div class="tv-meta-label">Department</div>
+          <div class="tv-meta-val">Cardiology</div>
+        </div>
+        <div class="tv-meta-item">
+          <div class="tv-meta-label">Doctor</div>
+          <div class="tv-meta-val">Dr. Malik</div>
+        </div>
+        <div class="tv-meta-item">
+          <div class="tv-meta-label">Avg. Wait</div>
+          <div class="tv-meta-val">~12 min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting list -->
+    <div>
+      <div class="tv-waiting-title">Upcoming Patients</div>
+      <div class="tv-waiting">
+        <div class="tv-queue-item next">
+          <div class="tv-q-token">002</div>
+          <div>
+            <div class="tv-q-name">Sara Iqbal</div>
+            <div class="tv-q-dept">General OPD · Dr. Khan</div>
+          </div>
+          <span class="tv-q-next-badge">Next</span>
+        </div>
+        <div class="tv-queue-item">
+          <div class="tv-q-token">003</div>
+          <div>
+            <div class="tv-q-name">Bilal Raza</div>
+            <div class="tv-q-dept">Orthopedics · Dr. Ali</div>
+          </div>
+          <div class="tv-q-wait">~10 mins</div>
+        </div>
+        <div class="tv-queue-item">
+          <div class="tv-q-token">004</div>
+          <div>
+            <div class="tv-q-name">Fatima Khan</div>
+            <div class="tv-q-dept">Gynecology · Dr. Amina</div>
+          </div>
+          <div class="tv-q-wait">~15 mins</div>
+        </div>
+        <div class="tv-queue-item">
+          <div class="tv-q-token">005</div>
+          <div>
+            <div class="tv-q-name">Usman Sheikh</div>
+            <div class="tv-q-dept">Cardiology · Dr. Malik</div>
+          </div>
+          <div class="tv-q-wait">~20 mins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tv-footer">
+    <p>CareFlow OPD Management System · Please wait for your token number to be called</p>
+    <button class="tv-exit" onclick="closeTV()">✕ Exit TV Mode</button>
+  </div>
+</div>
+
+<script>
+  // Date
+  const now = new Date();
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+
+  // Live clock for TV mode
+  function updateClock() {
+    const t = new Date();
+    document.getElementById('tvClock').textContent = t.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // TV Mode
+  function openTV() {
+    document.getElementById('tvOverlay').classList.add('show');
+  }
+
+  function closeTV() {
+    document.getElementById('tvOverlay').classList.remove('show');
+  }
+
+  // Close TV mode with Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeTV();
+  });
+
+  // Dept filter
+  function filterDept(btn, dept) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // In real system: fetch filtered rows from PHP
+  }
+
+  // Call Next
+  let currentToken = 1;
+  const queue = [
+    { token:'T-002', num:'002', patient:'Sara Iqbal',   dept:'General OPD' },
+    { token:'T-003', num:'003', patient:'Bilal Raza',   dept:'Orthopedics' },
+    { token:'T-004', num:'004', patient:'Fatima Khan',  dept:'Gynecology' },
+    { token:'T-005', num:'005', patient:'Usman Sheikh', dept:'Cardiology' },
+  ];
+
+  function callNext() {
+    if (currentToken >= queue.length) return;
+    const next = queue[currentToken];
+    document.getElementById('currentTokenNum').textContent = next.num;
+    document.getElementById('currentTokenId').textContent  = next.token + ' · ' + next.dept;
+    document.getElementById('currentPatient').textContent  = next.patient;
+    document.getElementById('tvToken').textContent         = next.num;
+    document.getElementById('tvTokenId').textContent       = next.token;
+    document.getElementById('tvPatient').textContent       = next.patient;
+
+    // Update next display
+    if (currentToken + 1 < queue.length) {
+      const upcoming = queue[currentToken + 1];
+      document.getElementById('nextTokenDisplay').textContent = upcoming.token;
+      document.getElementById('nextPatientName').textContent  = upcoming.patient;
+    }
+
+    currentToken++;
+  }
+
+  // Refresh
+  function refreshQueue() {
+    const icon = document.getElementById('refreshIcon');
+    icon.style.animation = 'spin 0.6s linear';
+    setTimeout(() => icon.style.animation = '', 600);
+  }
+
+  // Auto-refresh every 30s
+  setInterval(refreshQueue, 30000);
+</script>
+
+</body>
+</html>
