@@ -1356,6 +1356,11 @@
 <script>
 
   // =========================
+  // API BASE URL (IMPORTANT FIX)
+  // =========================
+  const API_BASE = "https://YOUR_RAILWAY_URL.up.railway.app";
+
+  // =========================
   // CURRENT DATE
   // =========================
   const now = new Date();
@@ -1381,11 +1386,11 @@
 
 
   // =========================
-  // LOAD PATIENTS (API)
+  // LOAD PATIENTS (API FIXED)
   // =========================
   async function loadPatients() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/patients");
+      const res = await fetch(`${API_BASE}/patients`);
       const data = await res.json();
 
       const tbody = document.querySelector("tbody");
@@ -1493,7 +1498,7 @@
 
 
   // =========================
-  // SUBMIT FORM (UPDATED FIX)
+  // SUBMIT FORM (FIXED)
   // =========================
   async function submitForm() {
 
@@ -1533,7 +1538,7 @@
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/register-patient", {
+      const res = await fetch(`${API_BASE}/register-patient`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -1543,25 +1548,18 @@
 
       if (data.success) {
 
-        // =========================
-        // NEW FIX: SYNC WITH QUEUE PAGE
-        // =========================
-
         let queueData = JSON.parse(localStorage.getItem("queueData")) || [];
 
         const newPatient = {
-          token: data.patientId,   // SAME TOKEN
+          token: data.patientId,
           name: `${payload.firstName} ${payload.lastName}`,
           dept: payload.department
         };
 
         queueData.push(newPatient);
-
         localStorage.setItem("queueData", JSON.stringify(queueData));
 
-        // show ID
         document.getElementById('generatedId').textContent = data.patientId;
-
         document.getElementById('successModal').classList.add('show');
 
         loadPatients();
@@ -1572,7 +1570,7 @@
 
     } catch (err) {
       console.error(err);
-      alert("Server not reachable (check FastAPI is running on port 8000)");
+      alert("API not reachable. Check Railway URL or backend.");
     }
   }
 
