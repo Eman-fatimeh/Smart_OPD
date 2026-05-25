@@ -612,7 +612,12 @@
 </div>
 
 <script>
-  const API_BASE = "https://smartopd-production.up.railway.app";
+  // =========================
+  // 🔥 IMPORTANT: YOUR RAILWAY BACKEND URL
+  // =========================
+  const API_BASE = "https://smartopd-production.up.railway.app"; 
+  // 👆 change ONLY if Railway gives you a different URL
+
   // =========================
   // ROLE SELECTION
   // =========================
@@ -667,16 +672,12 @@
 
     errorMsg.classList.remove('show');
 
-    // Validation
     if (!username || !password || !role) {
       errorMsg.classList.add('show');
       errorText.textContent = 'Please fill in all fields.';
       return;
     }
 
-    // =========================
-    // LOADING STATE
-    // =========================
     const btn     = document.getElementById('loginBtn');
     const spinner = document.getElementById('spinner');
     const arrow   = document.getElementById('btnArrow');
@@ -689,7 +690,8 @@
 
     try {
 
-      const response = await fetch('http://127.0.0.1:8000/login', {
+      // ✅ FIXED: USE RAILWAY BACKEND (NOT LOCALHOST)
+      const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -701,21 +703,19 @@
         })
       });
 
-      // SAFE JSON PARSE
-      let data = {};
+      let data;
       try {
         data = await response.json();
       } catch (err) {
-        throw new Error("Invalid server response");
+        throw new Error("Server returned invalid response");
       }
 
-      // CHECK RESPONSE STATUS
       if (!response.ok) {
         throw new Error(data.detail || 'Invalid credentials');
       }
 
       // =========================
-      // SUCCESS LOGIN
+      // SAVE USER SESSION
       // =========================
       const userData = {
         username,
@@ -724,21 +724,12 @@
       };
 
       localStorage.setItem("loggedInUser", JSON.stringify(userData));
+      localStorage.setItem(role + "User", JSON.stringify(userData));
 
-      if (role === "doctor") {
-        localStorage.setItem("doctorUser", JSON.stringify(userData));
-      }
-
-      if (role === "admin") {
-        localStorage.setItem("adminUser", JSON.stringify(userData));
-      }
-
-      if (role === "receptionist") {
-        localStorage.setItem("receptionistUser", JSON.stringify(userData));
-      }
-
+      // =========================
       // REDIRECT
-      window.location.href = data.redirect;
+      // =========================
+      window.location.href = data.redirect || "admin.html";
 
     } catch (error) {
 
@@ -747,7 +738,6 @@
 
     } finally {
 
-      // RESET BUTTON
       btn.disabled = false;
       spinner.style.display = 'none';
       arrow.style.display = 'block';
