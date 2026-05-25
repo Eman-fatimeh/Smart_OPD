@@ -414,17 +414,22 @@ th{
 <script>
 
 /* =========================
+   API BASE (IMPORTANT FIX)
+========================= */
+
+const API_BASE = "https://YOUR_RAILWAY_URL.up.railway.app";
+
+
+/* =========================
    LIVE CLOCK
 ========================= */
 
-function updateTime(){
-
+function updateTime() {
   document.getElementById("liveTime").textContent =
     new Date().toLocaleString();
 }
 
 setInterval(updateTime, 1000);
-
 updateTime();
 
 
@@ -432,10 +437,8 @@ updateTime();
    LOGOUT
 ========================= */
 
-function logout(){
-
+function logout() {
   localStorage.clear();
-
   window.location.href = "login.html";
 }
 
@@ -444,20 +447,12 @@ function logout(){
    STORAGE HELPERS
 ========================= */
 
-function getQueueData(){
-
-  return JSON.parse(
-    localStorage.getItem("queueData")
-  ) || [];
+function getQueueData() {
+  return JSON.parse(localStorage.getItem("queueData")) || [];
 }
 
-
-function getCurrentIndex(){
-
-  const val = parseInt(
-    localStorage.getItem("currentQueueIndex")
-  );
-
+function getCurrentIndex() {
+  const val = parseInt(localStorage.getItem("currentQueueIndex"));
   return isNaN(val) ? -1 : val;
 }
 
@@ -466,77 +461,54 @@ function getCurrentIndex(){
    LOAD DASHBOARD
 ========================= */
 
-async function loadDashboard(){
+async function loadDashboard() {
 
-  try{
+  try {
 
-    const queueData =
-      getQueueData();
-
-    const currentIndex =
-      getCurrentIndex();
+    const queueData = getQueueData();
+    const currentIndex = getCurrentIndex();
 
 
     /* ======================
-       FETCH DOCTORS
+       FETCH DOCTORS (FIXED)
     ====================== */
 
-    const response =
-      await fetch(
-        "http://127.0.0.1:8000/doctors"
-      );
-
-    const doctors =
-      await response.json();
+    const response = await fetch(`${API_BASE}/doctors`);
+    const doctors = await response.json();
 
 
     /* ======================
        PATIENT STATS
     ====================== */
 
-    const totalPatients =
-      queueData.length;
+    const totalPatients = queueData.length;
 
-    const waiting =
-      queueData.filter(
-        (_, i) => i > currentIndex
-      ).length;
+    const waiting = queueData.filter(
+      (_, i) => i > currentIndex
+    ).length;
 
-    document.getElementById(
-      "totalPatients"
-    ).textContent = totalPatients;
-
-    document.getElementById(
-      "activeQueue"
-    ).textContent = waiting;
+    document.getElementById("totalPatients").textContent = totalPatients;
+    document.getElementById("activeQueue").textContent = waiting;
 
 
     /* ======================
        DOCTOR STATS
     ====================== */
 
-    document.getElementById(
-      "totalDoctors"
-    ).textContent = doctors.length;
+    document.getElementById("totalDoctors").textContent = doctors.length;
 
-    const availableDoctors =
-      doctors.filter(
-        d => d.status === "Available"
-      ).length;
+    const availableDoctors = doctors.filter(
+      d => d.status === "Available"
+    ).length;
 
-    document.getElementById(
-      "availableDoctors"
-    ).textContent =
-      availableDoctors;
+    document.getElementById("availableDoctors").textContent = availableDoctors;
 
 
     /* ======================
        RECENT PATIENTS
     ====================== */
 
-    document.getElementById(
-      "patientsTable"
-    ).innerHTML =
+    document.getElementById("patientsTable").innerHTML =
 
       queueData.length
 
@@ -544,33 +516,25 @@ async function loadDashboard(){
           .slice(-5)
           .reverse()
           .map((p, i) => `
-
             <tr>
               <td>${i + 1}</td>
               <td>${p.name}</td>
               <td>${p.dept}</td>
             </tr>
-
           `).join("")
 
       : `
-
           <tr>
-            <td colspan="3">
-              No patients
-            </td>
+            <td colspan="3">No patients</td>
           </tr>
-
         `;
 
 
     /* ======================
-       LIVE QUEUE
+       LIVE QUEUE (FIXED BUG)
     ====================== */
 
-    document.getElementById(
-      "queueTable"
-    ).innerHTML =
+    document.getElementById("queueTable").innerHTML =
 
       queueData.length
 
@@ -581,55 +545,39 @@ async function loadDashboard(){
             let status = "Waiting";
             let statusClass = "waiting";
 
-            if(index === currentIndex){
-
+            if (index === currentIndex) {
               status = "In Consult";
               statusClass = "available";
             }
 
-            else if(index <scrip currentIndex){
-
+            else if (index < currentIndex) {
               status = "Completed";
               statusClass = "available";
             }
 
             return `
-
               <tr>
-
                 <td>${t.token}</td>
-
                 <td>${t.name}</td>
-
                 <td>
                   <span class="status ${statusClass}">
                     ${status}
                   </span>
                 </td>
-
               </tr>
-
             `;
           }).join("")
 
       : `
-
           <tr>
-            <td colspan="3">
-              No queue
-            </td>
+            <td colspan="3">No queue</td>
           </tr>
-
         `;
 
   }
 
-  catch(error){
-
-    console.log(
-      "Dashboard Error:",
-      error
-    );
+  catch(error) {
+    console.log("Dashboard Error:", error);
   }
 }
 
@@ -639,12 +587,8 @@ async function loadDashboard(){
 ========================= */
 
 loadDashboard();
-
 setInterval(loadDashboard, 2000);
 
-
-
 </script>
-
 </body>
 </html>
